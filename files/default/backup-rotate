@@ -1,0 +1,274 @@
+#!/usr/bin/env ruby
+
+# Author:: Paul Mooring <paul@opscode.com>
+#
+# Copyright 2013, Opscode, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+require 'rubygems'
+require 'optparse'
+require 'date'
+require 'time'
+require 'syslog'
+require 'fileutils'
+
+# Let's backport some Date/Time methods!
+if Gem::Version.new(RUBY_VERSION.dup) < Gem::Version.new('1.9.3')
+  class DateTime
+    def to_date
+      Date.parse self.to_s
+    end
+
+    def to_time
+      Time.parse self.to_s
+    end
+  end
+
+  class Date
+    def prev_day(n = 1)
+      self - n
+    end
+
+    def next_day(n = 1)
+      self + n
+    end
+
+    def prev_month(n = 1)
+      self << n
+    end
+
+    def next_month(n = 1)
+      self >> n
+    end
+
+    def prev_year(n = 1)
+      self << (n * 12)
+    end
+
+    def next_month(n = 1)
+      self >> (n * 12)
+    end
+
+    [:sunday?, :monday?, :tuesday?, :wednesday?, :thursday?, :friday?, :saturday?].each_with_index do |day, i|
+      define_method day do
+        self.wday == i
+      end
+    end
+  end
+end
+
+@opts = {:verbosity => 0}
+
+option_parser = OptionParser.new do |o|
+  o.banner = "Usage: #{$0} [-h] [-vq] [-H <# of backups>] [-D <# of backups>] [-W <# of backups>] [-M <# of backups>] <backup directory>"
+
+  o.on("-h", "--help", "Display help message") do
+    puts o
+    exit 0
+  end
+
+  o.on("-v", "--verbose", "Raise verbosity") do
+    if @opts[:verbosity].respond_to? :+
+      @opts[:verbosity] += 1
+    else
+      @opts[:verbosity] = 1
+    end
+  end
+  o.on("-q", "--quiet", "Lower verbosity") do
+    if @opts[:verbosity].respond_to? :-
+      @opts[:verbosity] -= 1
+    else
+      @opts[:verbosity] = -1
+    end
+  end
+
+  o.on("-H", "--hours hours", "Hourly backups to keep") do |hours|
+    begin
+      @opts[:hours] = Integer(hours)
+    rescue ArgumentError, TypeError
+      "--hours expects a number as it's argument"
+    end
+  end
+
+  o.on("-D", "--days days", "Daily backups to keep") do |days|
+    begin
+      @opts[:days] = Integer(days)
+    rescue ArgumentError, TypeError
+      "--days expects a number as it's argument"
+    end
+  end
+
+  o.on("-W", "--weeks weeks", "Weekly backups to keep") do |weeks|
+    begin
+      @opts[:weeks] = Integer(weeks)
+    rescue ArgumentError, TypeError
+      "--weeks expects a number as it's argument"
+    end
+  end
+
+  o.on("-M", "--months months", "Monthly backups to keep") do |months|
+    begin
+      @opts[:months] = Integer(months)
+    rescue ArgumentError, TypeError
+      "--months expects a number as it's argument"
+    end
+  end
+end
+
+option_parser.parse!
+
+if ARGV[0]
+  @opts[:backup_directory] = ARGV[0]
+  # Default number of backups
+  @opts[:hours] ||= 0
+  @opts[:days] ||= 7
+  @opts[:weeks] ||= 6
+  @opts[:months] ||= 6
+else
+  raise ArgumentError, "Missing mandatory argument for backup directory."
+  exit 1
+end
+
+def log_msg(message, lvl = :info)
+  @log ||= Syslog.open($0, Syslog::LOG_PID | Syslog::LOG_CONS)
+
+  if [:err, :crit, :alert, :emerg].include? lvl
+    $stderr.puts message
+  elsif [:warn, :info].include?(lvl) and @opts[:verbosity] > 0
+    puts message
+  elsif @opts[:verbosity] > 1
+    puts message 
+  end
+  @log.send(lvl, message)
+end
+
+def get_days(day, days)
+  if day.class != Array
+    get_days(Array(day), days)
+  else
+    if day.length == days
+      day
+    else
+      get_days(day.push(day.last.prev_day), days)
+    end
+  end
+end
+
+def get_weeks(day, weeks)
+  until day.sunday?
+    day = day.prev_day
+  end
+  
+  sundays = Array(day)
+  (weeks - 1).times do
+    sundays.push sundays.last.prev_day(7)
+  end
+
+  sundays
+end
+
+def get_first_sunday(day, months_ago = 0)
+  mons_ago = day.prev_month(months_ago)
+  start_of_month = mons_ago.prev_day(mons_ago.mday - 1)
+  until start_of_month.sunday?
+    start_of_month = start_of_month.next_day
+  end
+
+  start_of_month
+end
+
+def get_months(day, months = 6)
+  if day < get_first_sunday(day)
+    first_ofs = Array(get_first_sunday(day, 1))
+  else
+    first_ofs = Array(get_first_sunday(day))
+    months -= 1
+  end
+
+  months.times do
+    first_ofs.push get_first_sunday(first_ofs.last, 1)
+  end
+
+  first_ofs
+end
+
+def before_cutover?(date)
+  @cutover ||= DateTime.parse("2013-08-07 00:00:00")
+
+  date < @cutover
+end
+
+backups = {
+  :daily => get_days(Date.today, @opts[:days]),
+  :weekly => get_weeks(Date.today, @opts[:weeks]),
+  :monthly => get_months(Date.today, @opts[:months])
+}
+
+Dir.glob("#{@opts[:backup_directory]}/*").each do |backup|
+  file_name = File.basename(backup)
+  next unless file_name =~ /(hourly|daily|weekly|monthly)-20([0-9]{2}-){5}[0-9]{2}/
+
+  begin
+    file_date = file_name.gsub(/(weekly|monthly|daily|hourly)-/, "").split("-").map {|i| i.to_i}
+    bkup_date = DateTime.civil(*file_date)
+  rescue ArgumentError
+    log_msg "Skipping file: #{backup}"
+  end
+
+  if backups[:monthly].include? bkup_date.to_date and bkup_date.hour == 23
+    backups[:monthly].delete bkup_date
+    if file_name =~ /monthly/
+      log_msg "found monthly backup: #{file_name}"
+    else
+      log_msg "Renaming file: #{file_name}"
+      FileUtils.mv(backup, backup.gsub(/(weekly|daily|hourly)/, "monthly"))
+    end
+  elsif backups[:weekly].include? bkup_date.to_date and bkup_date.hour == 23
+    backups[:weekly].delete bkup_date
+    if file_name =~ /weekly/
+      log_msg "found weekly backup: #{file_name}"
+    else
+      log_msg "Renaming file: #{file_name}"
+      FileUtils.mv(backup, backup.gsub(/(monthly|daily|hourly)/, "weekly"))
+    end
+  elsif backups[:daily].include? bkup_date.to_date and bkup_date.hour == 23
+    backups[:daily].delete bkup_date
+    if file_name =~ /daily/
+      log_msg "Found daily backup: #{backup}"
+    else
+      log_msg "Renaming file: #{backup}"
+      FileUtils.mv(backup, backup.gsub(/(monthly|weekly|hourly)/, "daily"))
+    end
+  elsif bkup_date.to_time.to_i > (DateTime.now.to_time.to_i - (3600 * @opts[:hours]))
+    if file_name =~ /hourly/
+      log_msg "Found hourly backup: #{backup}"
+    else
+      log_msg "Renaming file: #{backup}"
+      FileUtils.mv(backup, backup.gsub(/(monthly|weekly|daily)/, "hourly"))
+    end
+  elsif before_cutover? bkup_date
+    if (
+        (file_name =~ /daily/ and bkup_date < DateTime.now.prev_day(@opts[:days])) or
+        (file_name =~ /weekly/ and bkup_date < DateTime.now.prev_day(7 * @opts[:weeks])) or
+        (file_name =~ /monthly/ and bkup_date < DateTime.now.prev_month(@opts[:months]))
+       )
+      log_msg "Deleting file: #{backup}"
+      FileUtils.rm_rf(backup)
+    end
+  else
+    log_msg "Deleting file: #{backup}"
+    FileUtils.rm_rf(backup)
+  end
+end

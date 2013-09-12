@@ -1,0 +1,23 @@
+# Managed by Chef
+max connections = <%= node[:opscode_backup][:rsyncd][:max_conn] %>
+log file = /var/log/rsync.log
+timeout = <%= node[:opscode_backup][:rsyncd][:timeout] %>
+strict modes = <%= node[:opscode_backup][:rsyncd][:strict] %>
+
+auth users = rsync
+secrets file = <%= node[:opscode_backup][:rsyncd][:secrets_file] %>
+read only = no
+uid = rsync
+pre-xfer exec = /usr/local/bin/rsync-backup-pre.sh
+post-xfer exec = /usr/local/bin/rsync-backup-post.sh
+
+<% @backups.each do |backup| -%>
+# Role: <%= backup %>
+[<%= backup %>]
+  path = /backup/<%= backup %>
+  comment = <%= backup %>
+#  max connections = 1
+#  lock file = /var/lock/<%= backup %>.lock
+
+<% end -%>
+

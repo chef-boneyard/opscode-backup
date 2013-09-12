@@ -1,0 +1,30 @@
+{
+  "name": "backup-server",
+  "default_attributes": {
+    "opscode_backup": {
+      "mailto_addr": "sysadmin@example.com",
+      "offsite_servers": [
+        {
+          "host": "backups.example.com",
+          "rsync_options": "--timeout 600 --exclude hourly* --exclude CURRENT --exclude IN-PROGRESS* --exclude *.view -Lap",
+          "cron_schedule": "35 6 * * *"
+        },
+        {
+          "host": "backups.rs-preprod.opscode.com",
+          "rsync_options": "--timeout 600 --exclude hourly* --exclude CURRENT --exclude IN-PROGRESS* --exclude *.view -Lap",
+          "cron_schedule": "35 12 * * *"
+        }
+      ]
+    }
+  },
+  "json_class": "Chef::Role",
+  "run_list": [
+    "recipe[opscode-backup::server]"
+  ],
+  "description": "Rsync Backups Server",
+  "env_run_lists": {
+  },
+  "chef_type": "role",
+  "override_attributes": {
+  }
+}
