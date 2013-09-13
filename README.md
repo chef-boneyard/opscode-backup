@@ -24,10 +24,20 @@ default
 
 The following attributes are used by both client and server recipes.
 
-* `node['nagios']['user']` - nagios user, default 'nagios'.
-* `node['nagios']['group']` - nagios group, default 'nagios'.
-* `node['nagios']['plugin_dir']` - location where nagios plugins go,
-* default '/usr/lib/nagios/plugins'.
+* `node['opscode_backup']['rsyncd']['config_file']` - The servers config file path. Default is "/etc/rsyncd.conf"
+* `node['opscode_backup']['rsyncd']['opts']` - Extra options for rsyncd. Default is ""
+* `node['opscode_backup']['rsyncd']['nice']` - Nice value for rsynd process. Default is 10
+* `node['opscode_backup']['rsyncd']['max_conn']` - Max connections to rsyncd. Default is 0
+* `node['opscode_backup']['rsyncd']['timeout']` - Timeout value for rsyncd. Default is 900
+* `node['opscode_backup']['rsyncd']['strict']` - Enable strict option for rsyncd. Default is "true"
+* `node['opscode_backup']['rsyncd']['secrets_file']` - Path to secrets file for rsyncd. Default is "/etc/rsyncd.secrets"
+* `node['opscode_backup']['rsyncd']['enable']` - Enable the rsyncd service. Default is "true"
+* `node['opscode_backup']['retention']['hours']` - Number of hourly copies to keep. Default is 24
+* `node['opscode_backup']['retention']['days']` - Number of daily copies to keep. Default is 7
+* `node['opscode_backup']['retention']['weeks']` - Number of weekly copies to keep. Default is 8
+* `node['opscode_backup']['retention']['months']` - Number of montly copies to keep. Default is 6
+* `node['opscode_backup']['mailto_addr']` - MAILTO address for cron entry. No Default
+* `node['opscode_backup']['offsite_servers']` - An array containing offsite servers to copy to (see examples). No Default
 
 Recipes
 =======
