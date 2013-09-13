@@ -18,31 +18,31 @@
 
 # This is an example recipe that uses the opscode_backup lwrp
 
-include_recipe "opscode-backup::client"
+include_recipe 'opscode-backup::client'
 
 rsyncd_server = search(:node, "role:backup-server AND chef_environment:#{node.chef_environment}").first
 unless rsyncd_server
-  Chef::Log.info "No rsync servers found, skipping opscode-backups::client"
+  Chef::Log.info 'No rsync servers found, skipping opscode-backups::client'
   return
 end
 
-cookbook_file "/usr/local/bin/database_backup.sh" do
-  source "database_backup.sh.erb"
-  owner "root"
-  group "root"
-  mode "0755"
+cookbook_file '/usr/local/bin/database_backup.sh' do
+  source 'database_backup.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0755'
 end
 
 directory node['db']['backup_dir']
 directory "#{node['db']['backup_dir']}/current"
 directory "#{node['db']['backup_dir']}/archive"
 
-opscode_backup "db" do
+opscode_backup 'db' do
   server rsyncd_server['fqdn']
   directory "#{node['db']['backup_dir']}/current"
-  cron_schedule "0 * * * *"
-  target "db"
-  password_file node[:opscode_backup][:rsyncd][:secrets_file]
-  pre_cmd "/usr/local/bin/database_backup.sh"
+  cron_schedule '0 * * * *'
+  target 'db'
+  password_file node['opscode_backup']['rsyncd']['secrets_file']
+  pre_cmd '/usr/local/bin/database_backup.sh'
   post_cmd "find #{node['db']['backup_dir']}/archive -type f -cmin +180 -exec rm -rf {} \;"
 end

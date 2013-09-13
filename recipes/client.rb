@@ -20,12 +20,12 @@
 package 'rsync'
 
 # secrets!
-template node[:opscode_backup][:rsyncd][:secrets_file] do
-  source "rsync-client.secrets.erb"
-  owner "root"
-  group "root"
-  mode "0600"
+template node['opscode_backup']['rsyncd']['secrets_file'] do
+  source 'rsync-client.secrets.erb'
+  owner 'root'
+  group 'root'
+  mode '0600'
   variables(
-    :rsyncd_password => data_bag_item("secrets", node.chef_environment)['rsyncd_password']
+    :rsyncd_password => data_bag_item('secrets', node.chef_environment)['rsyncd_password']
   )
 end

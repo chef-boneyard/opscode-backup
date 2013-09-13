@@ -22,7 +22,7 @@ default_action :create
 attribute :target, :kind_of => String, :name_attribute => true
 attribute :server, :kind_of => String, :required => true
 attribute :directory, :kind_of => String, :required => true
-attribute :cron_schedule, :kind_of => String, :default => "0 * * * *"
+attribute :cron_schedule, :kind_of => String, :default => '0 * * * *'
 attribute :pre_cmd, :kind_of => [String, NilClass], :default => nil
 attribute :post_cmd, :kind_of => [String, NilClass], :default => nil
 attribute :password_file, :kind_of => [String, NilClass], :default => nil
