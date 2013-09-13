@@ -18,21 +18,21 @@
 # limitations under the License.
 #
 
-default['opscode_backup']['rsyncd']['config_file'] = "/etc/rsyncd.conf"
-default['opscode_backup']['rsyncd']['opts'] = ""
+default['opscode_backup']['rsyncd']['config_file'] = '/etc/rsyncd.conf'
+default['opscode_backup']['rsyncd']['opts'] = ''
 default['opscode_backup']['rsyncd']['nice'] = 10
 default['opscode_backup']['rsyncd']['max_conn'] = 0
 default['opscode_backup']['rsyncd']['timeout'] = 900  # 0 to disable
-default['opscode_backup']['rsyncd']['strict'] = "true"
-default['opscode_backup']['rsyncd']['secrets_file'] = "/etc/rsyncd.secrets" # change secrets_file to "" if you don't need it written or used in config_file
-default['opscode_backup']['rsyncd']['enable'] = "true"
+default['opscode_backup']['rsyncd']['strict'] = 'true'
+default['opscode_backup']['rsyncd']['secrets_file'] = '/etc/rsyncd.secrets' # change secrets_file to "" if you don't need it written or used in config_file
+default['opscode_backup']['rsyncd']['enable'] = 'true'
 
 default['opscode_backup']['retention']['hours']  = 24
 default['opscode_backup']['retention']['days']   = 7
 default['opscode_backup']['retention']['weeks']  = 8
 default['opscode_backup']['retention']['months'] = 6
 
-default['opscode_backup']['mailto_addr'] = ""
+default['opscode_backup']['mailto_addr'] = ''
 default['opscode_backup']['offsite_servers'] = [
   # {
     # 'host' => 'offsite-backups.example.com',

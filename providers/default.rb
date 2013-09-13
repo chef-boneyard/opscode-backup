@@ -24,13 +24,13 @@ use_inline_resources
 action :create do
   package 'rsync'
 
-  cookbook_file "/usr/local/bin/rsync-backups.sh" do
-    cookbook "opscode-backup"
-    source "rsync-backups.sh"
+  cookbook_file '/usr/local/bin/rsync-backups.sh' do
+    cookbook 'opscode-backup'
+    source 'rsync-backups.sh'
     backup false
-    owner "root"
-    group "root"
-    mode "0755"
+    owner 'root'
+    group 'root'
+    mode '0755'
   end
 
   directory new_resource.directory
@@ -50,10 +50,10 @@ action :create do
   end
 
   Chef::Log.debug "#{new_resource.name} tagging node"
-  if node[:tags].length > 0
-    node.normal[:tags] << 'backupclient' unless node[:tags].include?('backupclient')
+  if node['tags'].length > 0
+    node.normal['tags'] << 'backupclient' unless node['tags'].include?('backupclient')
   else
-    node.normal[:tags] = ['backupclient']
+    node.normal['tags'] = ['backupclient']
   end
 
   node.normal['opscode_backup']['targets'] = Array(node['opscode_backup']['targets']).dup.push(new_resource.target)
