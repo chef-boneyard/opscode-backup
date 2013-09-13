@@ -21,8 +21,8 @@ backup_targets = search(:node, 'tags:backupclient').collect do |node|
   node['opscode_backup']['targets']
 end.flatten
 
-secrets = data_bag_item("secrets", node.chef_environment)
-aws_preprod = data_bag_item("aws", "rs-preprod")
+secrets = data_bag_item('secrets', node.chef_environment)
+aws_preprod = data_bag_item('aws', 'rs-preprod')
 
 %w{rsync libxml2-dev libxslt-dev logtail libdatetime-perl}.each do |pkg|
   package pkg do
@@ -30,98 +30,98 @@ aws_preprod = data_bag_item("aws", "rs-preprod")
   end
 end
 
-template "/etc/default/rsync" do
-  source "rsync-default.erb"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, "service[rsync]"
+template '/etc/default/rsync' do
+  source 'rsync-default.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  notifies :restart, 'service[rsync]'
 end
 
 # Set up the rsync user for ssh copies
-user "rsync" do
-  comment "Rsync User"
-  home    "/backup"
-  shell   "/bin/bash"
+user 'rsync' do
+  comment 'Rsync User'
+  home    '/backup'
+  shell   '/bin/bash'
   system  true
 end
-directory "/backup" do
-  owner "rsync"
-  group "rsync"
-  mode "0755"
+directory '/backup' do
+  owner 'rsync'
+  group 'rsync'
+  mode '0755'
 end
-directory "/backup/.ssh" do
-  owner "rsync"
-  group "rsync"
-  mode "0700"
+directory '/backup/.ssh' do
+  owner 'rsync'
+  group 'rsync'
+  mode '0700'
 end
-file "/backup/.ssh/id_rsa" do
-  content secrets["rsync-backups-user.priv"]
-  mode "0600"
-  owner "rsync"
-  group "rsync"
+file '/backup/.ssh/id_rsa' do
+  content secrets['rsync-backups-user.priv']
+  owner 'rsync'
+  group 'rsync'
+  mode '0600'
 end
 
 backup_targets.each do |backup|
   directory "/backup/#{backup}" do
-    owner "rsync"
-    group "rsync"
-    mode "0755"
+    owner 'rsync'
+    group 'rsync'
+    mode '0755'
   end
 end
 
-template "#{node[:opscode_backup][:rsyncd][:config_file]}" do
-  source "rsyncd.conf.erb"
-  owner "root"
-  group "root"
-  mode "0644"
+template node['opscode_backup']['rsyncd']['config_file'] do
+  source 'rsyncd.conf.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
   variables(
     :backups => backup_targets
   )
-  notifies :restart, "service[rsync]"
+  notifies :restart, 'service[rsync]'
 end
 
 # secrets!
-template "#{node[:opscode_backup][:rsyncd][:secrets_file]}" do
-  source "rsync.secrets.erb"
-  owner "root"
-  group "root"
+template node['opscode_backup']['rsyncd']['secrets_file'] do
+  source 'rsync.secrets.erb'
+  owner 'root'
+  group 'root'
   mode "0600"
   variables(
-    :rsyncd_password => data_bag_item("secrets", node.chef_environment)['rsyncd_password']
+    :rsyncd_password => data_bag_item('secrets', node.chef_environment)['rsyncd_password']
   )
-  notifies :restart, "service[rsync]"
+  notifies :restart, 'service[rsync]'
 end
 
-cookbook_file "/usr/local/bin/rsync-backup-pre.sh" do
-  source "rsync-backup-pre.sh"
-  owner "root"
-  group "root"
-  mode "0755"
+cookbook_file '/usr/local/bin/rsync-backup-pre.sh' do
+  source 'rsync-backup-pre.sh'
+  owner 'root'
+  group 'root'
+  mode '0755'
 end
 
-template "/usr/local/bin/rsync-backup-post.sh" do
-  source "rsync-backup-post.sh.erb"
-  owner "root"
-  group "root"
-  mode "0755"
+template '/usr/local/bin/rsync-backup-post.sh' do
+  source 'rsync-backup-post.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0755'
 end
 
-cookbook_file "/usr/local/bin/backup-rotate" do
-  source "backup-rotate"
-  owner "root"
-  group "root"
-  mode "0755"
+cookbook_file '/usr/local/bin/backup-rotate' do
+  source 'backup-rotate'
+  owner 'root'
+  group 'root'
+  mode '0755'
 end
 
-template "/etc/cron.d/offsite-backups-push" do
-  source "offsite-backups-push-cron.erb"
-  owner "root"
-  group "root"
-  mode "0600"
+template '/etc/cron.d/offsite-backups-push' do
+  source 'offsite-backups-push-cron.erb'
+  owner 'root'
+  group 'root'
+  mode '0600'
 end
 
-service "rsync" do
+service 'rsync' do
   action [:enable, :start]
   supports :restart => true, :reload => true
 end

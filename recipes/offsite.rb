@@ -17,12 +17,12 @@
 # limitations under the License.
 #
 
-package "rsync"
+package 'rsync'
 
-user "rsync" do
-  comment "Rsync User"
-  home    "/backup"
-  shell   "/bin/bash"
+user 'rsync' do
+  comment 'Rsync User'
+  home    '/backup'
+  shell   '/bin/bash'
   system  true
 end
 
@@ -32,8 +32,8 @@ end.flatten
 
 backup_targets.each do |backup|
   directory "/backup/#{backup}" do
-    owner "rsync"
-    group "rsync"
-    mode "0755"
+    owner 'rsync'
+    group 'rsync'
+    mode '0755'
   end
 end
