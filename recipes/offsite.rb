@@ -26,6 +26,25 @@ user 'rsync' do
   system  true
 end
 
+directory '/backup' do
+  owner 'rsync'
+  group 'rsync'
+  mode '0755'
+end
+
+directory '/backup/.ssh' do
+  owner 'rsync'
+  group 'rsync'
+  mode '0700'
+end
+
+file '/backup/.ssh/id_rsa' do
+  content secrets['rsync-backups-user.priv']
+  owner 'rsync'
+  group 'rsync'
+  mode '0600'
+end
+
 backup_targets = search(:node, 'tags:backupclient').collect do |node|
   node['opscode_backup']['targets']
 end.flatten
