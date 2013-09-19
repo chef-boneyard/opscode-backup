@@ -30,6 +30,12 @@ aws_preprod = data_bag_item('aws', 'rs-preprod')
   end
 end
 
+# The backup-rotate script needs ruby, but I don't want to fight with potential
+# source installations
+package "ruby" do
+  only_if "which ruby"
+end
+
 template '/etc/default/rsync' do
   source 'rsync-default.erb'
   owner 'root'
@@ -45,16 +51,19 @@ user 'rsync' do
   shell   '/bin/bash'
   system  true
 end
+
 directory '/backup' do
   owner 'rsync'
   group 'rsync'
   mode '0755'
 end
+
 directory '/backup/.ssh' do
   owner 'rsync'
   group 'rsync'
   mode '0700'
 end
+
 file '/backup/.ssh/id_rsa' do
   content secrets['rsync-backups-user.priv']
   owner 'rsync'
