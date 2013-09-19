@@ -59,6 +59,8 @@ action :create do
   node.normal['opscode_backup']['targets'] = Array(node['opscode_backup']['targets']).dup.push(new_resource.target)
 
   Chef::Log.debug "#{new_resource.name} rsync backup job createed"
+
+  new_resource.updated_by_last_action(true)
 end
 
 action :delete do
