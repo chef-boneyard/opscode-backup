@@ -3,6 +3,13 @@ Description
 
 Installs and configures rsync based backup solution and provides an lwrp for using the client.
 
+Overview
+========
+
+This cookbooks has recipes to set up a local and offsite backup server as well as a client to ship files to those servers.  It also provides an LWRP for using the server which will create a job in crontab to rsync a specified directory to the server optionally running pre/post commands.
+
+Examples are provide for a client recipe and a role in the examples directory.
+
 Requirements
 ============
 
@@ -57,6 +64,11 @@ server
 
 Searches for all the nodes tagged with `backupclient` and creates rsync targets for them.  Installs and configures rsyncd along with a shared secret and pre/post scripts.
 
+offsite
+-------
+
+Sets up directories to backup to an offsite server
+
 Resources/Providers
 ===================
 
@@ -94,6 +106,8 @@ The opscode_backup LWRP is the primary way to use this cookbook
 
 Usage
 =====
+
+A data bag named 'secrets' with an item named after the current environment is assumed for distributing the shared rsync key.  Creating that item and adding a 'rsyncd_password' key is needed to make this work.
 
 See the included `example/recipe/backup.rb` file for a complete example of using the client and `examples/roles/backup-server.json` for the server.
 
