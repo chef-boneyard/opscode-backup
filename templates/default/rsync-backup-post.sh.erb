@@ -8,4 +8,4 @@ rm $RSYNC_MODULE_PATH/CURRENT
 ln -s $RSYNC_MODULE_PATH/hourly-$DATE $RSYNC_MODULE_PATH/CURRENT
 rm $RSYNC_MODULE_PATH/IN-PROGRESS-$DATE
 
-/usr/local/bin/backup-rotate <%= "-H #{node['opscode_backup']['retention']['hours']} -D #{node['opscode_backup']['retention']['days']} -W #{node['opscode_backup']['retention']['weeks']} -M #{node['opscode_backup']['retention']['months']} $RSYNC_MODULE_PATH
+/usr/local/bin/backup-rotate <%= "-H #{node['opscode_backup']['retention']['hours']} -D #{node['opscode_backup']['retention']['days']} -W #{node['opscode_backup']['retention']['weeks']} -M #{node['opscode_backup']['retention']['months']} %> $RSYNC_MODULE_PATH
