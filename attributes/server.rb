@@ -28,9 +28,11 @@ default['opscode_backup']['rsyncd']['secrets_file'] = '/etc/rsyncd.secrets' # ch
 default['opscode_backup']['rsyncd']['enable'] = 'true'
 
 default['opscode_backup']['retention']['hours']  = 24
-default['opscode_backup']['retention']['days']   = 7
+default['opscode_backup']['retention']['days']   = 8
 default['opscode_backup']['retention']['weeks']  = 8
-default['opscode_backup']['retention']['months'] = 6
+default['opscode_backup']['retention']['months'] = 7
+
+default['opscode_backup']['offsite']['rotation_schedule'] = "30 2 * * *",
 
 default['opscode_backup']['mailto_addr'] = ''
 default['opscode_backup']['offsite_servers'] = [

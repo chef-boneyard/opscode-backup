@@ -1,0 +1,4 @@
+# Managed by Chef
+MAILTO=<%= node['opscode_backup']['mailto_addr'] %>
+
+<%= node['opscode_backup']['offsite']['rotation_schedule'] %> root for backup_dir in $(ls -d /backup/*) ; do /usr/local/bin/backup-rotate <%= "-H #{node['opscode_backup']['retention']['hours']} -D #{node['opscode_backup']['retention']['days']} -W #{node['opscode_backup']['retention']['weeks']} -M #{node['opscode_backup']['retention']['months']}" %> ${backup_dir} ; done

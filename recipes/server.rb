@@ -32,7 +32,14 @@ end
 # The backup-rotate script needs ruby, but I don't want to fight with potential
 # source installations
 package "ruby" do
-  only_if "which ruby"
+  not_if "which ruby"
+end
+
+cookbook_file '/usr/local/bin/backup-rotate' do
+  source 'backup-rotate'
+  owner 'root'
+  group 'root'
+  mode '0755'
 end
 
 template '/etc/default/rsync' do
@@ -110,13 +117,6 @@ end
 
 template '/usr/local/bin/rsync-backup-post.sh' do
   source 'rsync-backup-post.sh.erb'
-  owner 'root'
-  group 'root'
-  mode '0755'
-end
-
-cookbook_file '/usr/local/bin/backup-rotate' do
-  source 'backup-rotate'
   owner 'root'
   group 'root'
   mode '0755'

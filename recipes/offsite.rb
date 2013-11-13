@@ -19,6 +19,19 @@
 
 secrets = data_bag_item('secrets', node.chef_environment)
 
+# The backup-rotate script needs ruby, but I don't want to fight with potential
+# source installations
+package "ruby" do
+  not_if "which ruby"
+end
+
+cookbook_file '/usr/local/bin/backup-rotate' do
+  source 'backup-rotate'
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
 package 'rsync'
 
 user 'rsync' do
@@ -57,4 +70,11 @@ backup_targets.each do |backup|
     group 'rsync'
     mode '0755'
   end
+end
+
+template '/etc/cron.d/backup-rotate-cron' do
+  source 'offsite-rotate-cron.erb'
+  owner 'root'
+  group 'root'
+  mode '0600'
 end
