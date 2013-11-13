@@ -22,7 +22,6 @@ backup_targets = search(:node, 'tags:backupclient').collect do |node|
 end.flatten
 
 secrets = data_bag_item('secrets', node.chef_environment)
-aws_preprod = data_bag_item('aws', 'rs-preprod')
 
 %w{rsync libxml2-dev libxslt-dev logtail libdatetime-perl}.each do |pkg|
   package pkg do

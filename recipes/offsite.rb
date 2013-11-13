@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+secrets = data_bag_item('secrets', node.chef_environment)
+
 package 'rsync'
 
 user 'rsync' do

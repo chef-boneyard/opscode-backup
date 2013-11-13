@@ -2,5 +2,5 @@
 MAILTO=<%= node['opscode_backup']['mailto_addr'] %>
 
 <% node['opscode_backup']['offsite_servers'].each do |server| %>
-<%= server['cron_schedule'] %> root rsync -e 'ssh -i /backup/.ssh/id_rsa -l rsync' <%= server['rsync_opts'] %> /backup/ <%= server['host'] %>:/backup
+<%= server['cron_schedule'] %> root rsync -ae 'ssh -i /backup/.ssh/id_rsa -l rsync' <%= server['rsync_opts'] %> --exclude=*/hourly-* /backup/ <%= server['host'] %>:/backup
 <% end -%>
