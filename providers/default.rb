@@ -72,7 +72,6 @@ action :delete do
     weekday get_time(new_resource.cron_schedule)[:weekday]
 
     user new_resource.user
-    mailto new_resource.mailto
 
     command get_command(new_resource)
 
