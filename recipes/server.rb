@@ -19,7 +19,7 @@
 
 backup_targets = search(:node, 'tags:backupclient').collect do |node|
   node['opscode_backup']['targets']
-end.flatten
+end.flatten.uniq.compact
 
 secrets = data_bag_item('secrets', node.chef_environment)
 
