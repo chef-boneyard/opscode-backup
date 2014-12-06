@@ -35,6 +35,7 @@ default['opscode_backup']['retention']['months'] = 7
 default['opscode_backup']['offsite']['rotation_schedule'] = "30 2 * * *",
 
 default['opscode_backup']['mailto_addr'] = ''
+default['opscode_backup']['offsite_excludes'] = ['*/hourly-*']
 default['opscode_backup']['offsite_servers'] = [
   # {
     # 'host' => 'offsite-backups.example.com',

@@ -129,6 +129,13 @@ template '/etc/cron.d/offsite-backups-push' do
   mode '0600'
 end
 
+template '/backup/exclude_file' do
+  source 'excludes.erb'
+  owner 'root'
+  group 'root'
+  mode '0755'
+end
+
 service 'rsync' do
   action [:enable, :start]
   supports :restart => true, :reload => true
