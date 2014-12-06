@@ -1,3 +1,5 @@
-<% node['opscode_backup']['offsite_excludes'].each do |exclude|
-   puts exclude
+<%
+node['opscode_backup']['offsite_excludes'].each do |exclude|
+  puts exclude
+end
 %>
