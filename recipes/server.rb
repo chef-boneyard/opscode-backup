@@ -127,6 +127,8 @@ template '/etc/cron.d/offsite-backups-push' do
   owner 'root'
   group 'root'
   mode '0600'
+
+  not_if { node['opscode_backup']['offsite_servers'].empty? }
 end
 
 template '/backup/exclude_file' do
